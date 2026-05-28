@@ -11,11 +11,11 @@ export async function POST(req: NextRequest) {
   const body = await req.text()
   const signature = req.headers.get("x-line-signature") || ""
 
-  const isValid = line.validateSignature(
-    body,
-    process.env.LINE_CHANNEL_SECRET || "",
-    signature
-  )
+  const crypto = require("crypto")
+  const hmac = crypto.createHmac("SHA256", process.env.LINE_CHANNEL_SECRET || "")
+  hmac.update(body)
+  const digest = hmac.digest("base64")
+  const isValid = digest === signature
 
   if (!isValid) {
     console.error("[webhook] invalid signature")
